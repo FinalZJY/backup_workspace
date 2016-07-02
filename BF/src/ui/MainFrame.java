@@ -2,6 +2,7 @@ package ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Image;
@@ -10,11 +11,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -25,6 +29,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -46,8 +51,9 @@ public class MainFrame extends JFrame {
 
 	public MainFrame(Client client) {
 		// 创建窗体
-		frame = new BFFrame("BF Client");
 		this.client=client;
+		frame = new BFFrame("BF Client");
+		frame.userPanel.automaticLogin();
 	}
 	
 	public BFMenu setMeun(BFMenuBar menuBar,String name) {
@@ -95,12 +101,13 @@ public class MainFrame extends JFrame {
 			codeArea = new JTextArea();
 			codeArea.setMargin(new Insets(10, 10, 10, 10));
 			codeArea.setBackground(Color.white);
-			codeArea.setLineWrap(false);
-			codeArea.setFont(new Font("", Font.BOLD, 25));
+			codeArea.setLineWrap(true);
+			codeArea.setFont(new Font("", Font.BOLD, 30));
 			codeArea.setForeground(new Color(50, 255, 0));
+			codeArea.setBorder(BorderFactory.createMatteBorder(4, 4, 1, 4, Color.white));
 			codeArea.addKeyListener(new CodeAreaListener());
 			scrollPane=new JScrollPane(codeArea);
-			scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+			scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 			scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 			
 
@@ -108,21 +115,43 @@ public class MainFrame extends JFrame {
 			codeLable=new JLabel("Code");
 			codeLable.setFont(new Font("", Font.BOLD, 28));
 			codeLable.setForeground(Color.red);
+						
+			codeLable.setOpaque(false);
+			userPanel.setOpaque(false);
+			inputAndOutputPanel.setOpaque(false);
+			codeArea.setOpaque(false);
+			scrollPane.setOpaque(false);
+			scrollPane.getViewport().setOpaque(false);
 			
-			this.add(scrollPane, BorderLayout.CENTER);
-			this.add(codeLable,BorderLayout.NORTH);
-			this.add(inputAndOutputPanel, BorderLayout.SOUTH);
-			this.add(userPanel, BorderLayout.EAST);
+			this.setContentPane(new BackgroundPanel());;
+			this.getContentPane().add(BorderLayout.SOUTH,inputAndOutputPanel);
+			this.getContentPane().add(BorderLayout.EAST,userPanel);
+			this.getContentPane().add(BorderLayout.CENTER,scrollPane);
+			this.getContentPane().add(BorderLayout.NORTH,codeLable);
+			this.addWindowListener(new WindowHandler());
 
 			this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			this.setBackground(Color.lightGray);
-			this.setSize(1600, 900);
-			this.setLocation(120, 60);
+			this.setSize(1300, 800);
+			this.setLocation(300, 100);
 			this.setVisible(true);
 		}
 
 		public IOPanel getIOPanel() {
 			return inputAndOutputPanel;
+		}
+	}
+	
+	class BackgroundPanel extends JPanel{
+		public BackgroundPanel() {
+			super();
+			setLayout(new BorderLayout());
+		}
+		
+		@Override
+		protected void paintComponent(Graphics g) {
+			Image background=new ImageIcon("images\\background7.jpg").getImage();
+			g.drawImage(background, 0, 0,frame.getWidth(),frame.getHeight(),this);
 		}
 	}
 	
@@ -250,21 +279,62 @@ public class MainFrame extends JFrame {
 		JLabel usernameLable=new JLabel("username");
 		JLabel passwordLable=new JLabel("password");
 		JLabel nameLable=new JLabel("");
-		JTextField username=new JTextField(10);
-		JTextField password=new JTextField(10);
-		JButton SignIn=new JButton("Sign In");
+		JLabel blankLable=new JLabel("");
+		ArrayList<JLabel> blankLabels=new ArrayList<JLabel>();
+		JTextField username=new JTextField(7);
+		JPasswordField password=new JPasswordField(7);
+		JButton SignIn=new JButton("Sign In ");
+		JButton SignUp=new JButton("Sign Up");
 		JButton SignOut=new JButton("Sign Out");
 		boolean login=false;
 		public UserPanel(){
 			super();
 			this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 			SignIn.addActionListener(new SignInListener());
+			SignUp.addActionListener(new SignUpListener());
 			SignOut.addActionListener(new SignOutListener());
+			SignIn.setFont(new Font("", Font.BOLD, 20));
+			SignUp.setFont(new Font("", Font.BOLD, 20));
+			SignOut.setFont(new Font("", Font.BOLD, 20));
+			usernameLable.setFont(new Font("", Font.BOLD, 20));
+			passwordLable.setFont(new Font("", Font.BOLD, 20));
+			nameLable.setFont(new Font("", Font.BOLD, 30));
+			username.setFont(new Font("", Font.BOLD, 30));
+			password.setFont(new Font("", Font.BOLD, 30));
 			this.add(usernameLable);
 			this.add(username);
 			this.add(passwordLable);
 			this.add(password);
 			this.add(SignIn);
+			this.add(SignUp);
+			addBlankLable(15);
+		}
+		
+		public void automaticLogin() {
+			System.out.println("automatic login");
+			String[] user=Function.readUser();
+			String username=user[0];
+			String password=user[1];
+			
+			if(username!=null && password!=null){
+				if(client.login(username, password)){
+					System.out.println("Client: login success ");
+					this.username.setText(user[0]);
+					this.password.setText(user[1]);
+					toUserPanel(username);
+				}
+				else {
+					JOptionPane.showMessageDialog(null, "The password is wrong or user:"+username+" doesn't exist.");
+				}
+				
+			}
+		}
+		
+		public void logout() {
+			if(login && client.logout(username.getText())){
+				toLogInPanel();
+				System.out.println("Client: logout");
+			}
 		}
 		
 		public void setAccount(String name) {
@@ -279,13 +349,19 @@ public class MainFrame extends JFrame {
 			 remove(username);
 			 remove(password);
 			 remove(SignIn);
+			 remove(SignUp);
+			 removeBlankLable();
 			 setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 			 nameLable.setText(name);
+			 blankLable.setText("                                           ");
+			 add(blankLable);
 			 add(nameLable);
 			 add(SignOut);
+			 SignOut.setSize(10, 5);
 			 repaint();
-			 frame.setSize(1700, 900);//待解决：不重设大小会显示不出userPanel
-			 frame.setSize(1600, 900);
+			 frame.setSize(1400, 800);//待解决：不重设大小会显示不出userPanel
+			 frame.setSize(1300, 800);
+			 Function.saveUser(username.getText(), password.getText());
 		 }
 		 
 		 public void toLogInPanel() {
@@ -299,7 +375,26 @@ public class MainFrame extends JFrame {
 			 add(passwordLable);
 			 add(password);
 			 add(SignIn);
+			 add(SignUp);
+			 blankLable.setText("　");
+			 add(blankLable);
+			 addBlankLable(15);;
 			 repaint();
+		}
+		 
+		public void  addBlankLable(int num) {
+			for(int i=0;i<num;i++){
+				JLabel label=new JLabel("　");
+				add(label);
+				blankLabels.add(label);
+			}
+		}
+		
+		public void removeBlankLable() {
+			for(JLabel label:blankLabels){
+				remove(label);
+				label.remove(label);
+			}
 		}
 	}
 	
@@ -310,9 +405,11 @@ public class MainFrame extends JFrame {
 		public IOPanel () {
 			super();
 			this.setLayout(new BorderLayout());
+			inputPanel.setOpaque(false);
+			outputPanel.setOpaque(false);
+			icon.setOpaque(false);
 			this.add(BorderLayout.WEST,inputPanel);
 			this.add(BorderLayout.EAST,outputPanel);
-			this.add(BorderLayout.CENTER,icon);
 		}
 	}
 	
@@ -323,12 +420,13 @@ public class MainFrame extends JFrame {
 		public InputPanel () {
 			super();
 			this.setLayout(new BorderLayout());
-			inputArea=new JTextArea(12,35);
+			inputArea=new JTextArea(5,20);
 			inputArea.setMargin(new Insets(10, 10, 10, 10));
 			inputArea.setBackground(Color.white);
 			inputArea.setLineWrap(false);
-			inputArea.setFont(new Font("", Font.BOLD, 20));
+			inputArea.setFont(new Font("", Font.BOLD, 32));
 			inputArea.setForeground(new Color(239, 142, 37));
+			inputArea.setBorder(BorderFactory.createMatteBorder(4, 4, 1, 4, Color.white));
 			inputArea.addKeyListener(new IOPanelListener());
 			scrollPane=new JScrollPane(inputArea);
 			scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -336,6 +434,10 @@ public class MainFrame extends JFrame {
 			
 			inputLable.setFont(new Font("", Font.BOLD, 28));
 			inputLable.setForeground(Color.red);
+			
+			inputArea.setOpaque(false);
+			scrollPane.setOpaque(false);
+			scrollPane.getViewport().setOpaque(false);
 			
 			this.add(BorderLayout.NORTH,inputLable);
 			this.add(BorderLayout.SOUTH,scrollPane);
@@ -350,17 +452,22 @@ public class MainFrame extends JFrame {
 		public OutputPanel () {
 			super();
 			this.setLayout(new BorderLayout());
-			outputArea=new JTextArea(12,35);
+			outputArea=new JTextArea(5,20);
 			outputArea.setMargin(new Insets(10, 10, 10, 10));
 			outputArea.setBackground(Color.white);
 			outputArea.setLineWrap(false);
-			outputArea.setFont(new Font("", Font.BOLD, 20));
+			outputArea.setFont(new Font("", Font.BOLD, 32));
+			outputArea.setBorder(BorderFactory.createMatteBorder(4, 4, 1, 4, Color.white));
 			scrollPane=new JScrollPane(outputArea);
 			scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 			scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 			
 			outputLable.setFont(new Font("", Font.BOLD, 28));
 			outputLable.setForeground(Color.red);
+			
+			outputArea.setOpaque(false);
+			scrollPane.setOpaque(false);
+			scrollPane.getViewport().setOpaque(false);
 			
 			this.add(BorderLayout.NORTH,outputLable);
 			this.add(BorderLayout.SOUTH,scrollPane);
@@ -390,6 +497,9 @@ public class MainFrame extends JFrame {
 				frame.codeArea.requestFocus();
 			}
 			else if (cmd.equals("Exit")) {
+				if(frame.userPanel.login==true){
+					
+				}
 				System.exit(-1);
 			}
 			else if (cmd.equals("Run")) {
@@ -421,13 +531,35 @@ public class MainFrame extends JFrame {
 		//登陆按钮的监听
 		public void actionPerformed(ActionEvent e) {
 			String username=frame.userPanel.username.getText();
-			String password=frame.userPanel.password.getText();
+			String password="";
+			for(char c:frame.userPanel.password.getPassword()){
+				password=password+c;
+			}
 			if(client.login(username, password)){
 				System.out.println("Client: login success ");
 				frame.userPanel.toUserPanel(username);
 			}
 			else {
 				JOptionPane.showMessageDialog(null, "The password is wrong or user:"+username+" doesn't exist.");
+			}
+		}
+	}
+	
+	class SignUpListener implements ActionListener {
+		//登陆按钮的监听
+		public void actionPerformed(ActionEvent e) {
+			String username=frame.userPanel.username.getText();
+			String password="";
+			for(char c:frame.userPanel.password.getPassword()){
+				password=password+c;
+			}
+			if(client.signup(username, password)){
+				client.login(username, password);
+				System.out.println("Client: signup success ");
+				frame.userPanel.toUserPanel(username);
+			}
+			else {
+				JOptionPane.showMessageDialog(null, username+" already exists.");
 			}
 		}
 	}
@@ -505,5 +637,52 @@ public class MainFrame extends JFrame {
 			// TODO Auto-generated method stub
 			
 		}
+	}
+	
+	
+	class WindowHandler implements WindowListener{
+
+		@Override
+		public void windowActivated(WindowEvent arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void windowClosed(WindowEvent arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void windowClosing(WindowEvent arg0) {
+			frame.userPanel.logout();
+			
+		}
+
+		@Override
+		public void windowDeactivated(WindowEvent arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void windowDeiconified(WindowEvent arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void windowIconified(WindowEvent arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void windowOpened(WindowEvent arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+		
 	}
 }

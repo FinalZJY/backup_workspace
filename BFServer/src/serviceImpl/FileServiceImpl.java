@@ -37,6 +37,12 @@ public class FileServiceImpl {
         			fileWriter.println(code);
         			fileWriter.flush();
 				}
+        		else if (message.substring(0, 2).equals("10")) {
+        			String filelist=readFileList(message.substring(3));
+        			System.out.println("Server: send filelist: "+filelist);
+        			fileWriter.println(filelist);
+        			fileWriter.flush();
+        		}
         		else {
         			System.out.println("Server: unknown command: "+message.substring(0, 2));
 				}
@@ -123,6 +129,6 @@ public class FileServiceImpl {
         for (int i = 0; i < filelist.length; i++) {
         	list=list+filelist[i]+"\n";
         }
-		return list;
+		return list+"*the end";
 	}
 }

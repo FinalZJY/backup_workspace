@@ -101,6 +101,40 @@ public class Client {
 		return false;
 	}
 	
+	public boolean signup(String username,String password) {		
+		try {		
+			userWriter.println("10*"+username+"_"+password);//10是注册
+			userWriter.flush();
+			System.out.println("Client: signup: "+username+"_"+password);
+			if(userReader.readLine().equals("signup success")){
+				return true;
+			}
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		return false;
+	}
+	
+	public String[] readFileList(String username) {
+		ArrayList<String> filelist=new ArrayList<String>();
+		try {	
+			fileWriter.println("10*"+username);//“10”：读文件列表，“*”：分隔符
+			fileWriter.flush();
+			String message="";
+			while (!(message=fileReader.readLine()).equals("*the end")) {//*the end表示该版本读取完毕
+				filelist.add(message);
+				System.out.println(message);	
+			}
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		String[] list=new String[filelist.size()];
+		for(int i=0;i<filelist.size();i++){
+			list[i]=filelist.get(i);
+		}
+		return list;
+	}
+	
 	public void saveCode(String username,String fileName,String code) {
 		try {	
 			fileWriter.println("00*"+username+"*"+fileName+"*"+code);//“00”：写文件，“*”：分隔符
@@ -113,6 +147,9 @@ public class Client {
 	
 	public ArrayList<String> readCode(String username,String fileName) {
 		ArrayList<String> allVersion=new ArrayList<String>();
+		if(fileName==null){
+			fileName="not found!";
+		}
 		/*
 		 * 示例：
 		 * send:01*admin1*HelloWorld
