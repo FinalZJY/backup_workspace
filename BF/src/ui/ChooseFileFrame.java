@@ -61,6 +61,7 @@ public class ChooseFileFrame extends JFrame {
 		fieldname=new JTextField(10);
 		fieldname.setFont(new Font("not determined", Font.BOLD, 25));
 		fieldname.setForeground(new Color(50, 255, 0));
+		fieldname.setMaximumSize(new Dimension(800, 600));
 		chooseButton=new JButton("OK");
 		chooseButton.addActionListener(new LoadFile());
 		setList();
@@ -83,6 +84,7 @@ public class ChooseFileFrame extends JFrame {
 		list=new JList<String>(client.readFileList(username));
 		list.setVisibleRowCount(4);
 		list.setFont(new Font("not determined", Font.BOLD, 35));
+		
 		//list.setCellRenderer(new FontCellRenderer());
 		list.addListSelectionListener(new ChooseFile());
 	}

@@ -7,6 +7,8 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 
+import javax.swing.JOptionPane;
+
 import ui.MainFrame;
 
 public class Client {
@@ -78,8 +80,15 @@ public class Client {
 			userWriter.println("00*"+username+"_"+password);//00是登入
 			userWriter.flush();
 			System.out.println("Client: login: "+username+"_"+password);
-			if(userReader.readLine().equals("login success")){
+			String message=userReader.readLine();
+			if(message.equals("login success")){
 				return true;
+			}
+			else if (message.equals(username+" has already login")) {
+				JOptionPane.showMessageDialog(null, username+" has already login");
+			}
+			else {
+				JOptionPane.showMessageDialog(null, "The password is wrong or user:"+username+" doesn't exist.");
 			}
 		} catch (Exception e1) {
 			e1.printStackTrace();
@@ -95,6 +104,9 @@ public class Client {
 			if(userReader.readLine().equals("logout success")){
 				return true;
 			}
+			else {
+				JOptionPane.showMessageDialog(null, "logout fail");
+			}
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
@@ -108,6 +120,9 @@ public class Client {
 			System.out.println("Client: signup: "+username+"_"+password);
 			if(userReader.readLine().equals("signup success")){
 				return true;
+			}
+			else {
+				JOptionPane.showMessageDialog(null, username+" already exists.");
 			}
 		} catch (Exception e1) {
 			e1.printStackTrace();
@@ -191,9 +206,7 @@ public class Client {
             			System.out.println("Client: resend :end");
             			continue;
             		}
-            		else if(message.equals("")){
-            			message="\n";
-            		}
+            		message=message+"\n";
             		System.out.println("Client: receive output: "+message);
             		frame.appendOutputArea(message);
             	}

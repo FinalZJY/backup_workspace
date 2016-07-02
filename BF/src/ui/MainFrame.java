@@ -77,11 +77,12 @@ public class MainFrame extends JFrame {
 	}
 	
 	public void setOutputArea(String output) {
-		frame.inputAndOutputPanel.outputPanel.outputArea.setText(output);
+		frame.inputAndOutputPanel.IOArea.setText(output);
 	}
 	
 	public void appendOutputArea(String output) {
-		frame.inputAndOutputPanel.outputPanel.outputArea.append(output);
+		frame.inputAndOutputPanel.IOArea.append("Brainfuck> "+output);
+		frame.inputAndOutputPanel.IOArea.requestFocus();
 	}
 	
 	public class BFFrame extends JFrame{
@@ -322,11 +323,7 @@ public class MainFrame extends JFrame {
 					this.username.setText(user[0]);
 					this.password.setText(user[1]);
 					toUserPanel(username);
-				}
-				else {
-					JOptionPane.showMessageDialog(null, "The password is wrong or user:"+username+" doesn't exist.");
-				}
-				
+				}				
 			}
 		}
 		
@@ -397,54 +394,51 @@ public class MainFrame extends JFrame {
 			}
 		}
 	}
-	
+/*	
 	public class IOPanel extends JPanel{
 		InputPanel inputPanel=new InputPanel();
-		OutputPanel outputPanel=new OutputPanel();
 		JLabel icon=new JLabel(new ImageIcon("abc.jpg"));
 		public IOPanel () {
 			super();
 			this.setLayout(new BorderLayout());
 			inputPanel.setOpaque(false);
-			outputPanel.setOpaque(false);
 			icon.setOpaque(false);
 			this.add(BorderLayout.WEST,inputPanel);
-			this.add(BorderLayout.EAST,outputPanel);
 		}
 	}
-	
-	public class InputPanel extends JPanel{
-		JLabel inputLable=new JLabel("Input");
-		JTextArea inputArea;
+*/	
+	public class IOPanel extends JPanel{
+		JLabel IOLable=new JLabel("Input and Output");
+		JLabel signature=new JLabel(new ImageIcon("images\\signature.png"));
+		JTextArea IOArea;
 		JScrollPane scrollPane=new JScrollPane();
-		public InputPanel () {
+		public IOPanel () {
 			super();
 			this.setLayout(new BorderLayout());
-			inputArea=new JTextArea(5,20);
-			inputArea.setMargin(new Insets(10, 10, 10, 10));
-			inputArea.setBackground(Color.white);
-			inputArea.setLineWrap(false);
-			inputArea.setFont(new Font("", Font.BOLD, 32));
-			inputArea.setForeground(new Color(239, 142, 37));
-			inputArea.setBorder(BorderFactory.createMatteBorder(4, 4, 1, 4, Color.white));
-			inputArea.addKeyListener(new IOPanelListener());
-			scrollPane=new JScrollPane(inputArea);
+			IOArea=new JTextArea(5,25);
+			IOArea.setMargin(new Insets(10, 10, 10, 10));
+			IOArea.setBackground(Color.white);
+			IOArea.setLineWrap(false);
+			IOArea.setFont(new Font("", Font.BOLD, 32));
+			IOArea.setForeground(new Color(174, 0, 255));
+			IOArea.setBorder(BorderFactory.createMatteBorder(4, 4, 1, 4, Color.white));
+			IOArea.addKeyListener(new IOPanelListener());
+			IOArea.setOpaque(false);
+			scrollPane=new JScrollPane(IOArea);
 			scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-			scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+			scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);			
+			IOLable.setFont(new Font("", Font.BOLD, 28));
+			IOLable.setForeground(Color.red);
 			
-			inputLable.setFont(new Font("", Font.BOLD, 28));
-			inputLable.setForeground(Color.red);
-			
-			inputArea.setOpaque(false);
 			scrollPane.setOpaque(false);
 			scrollPane.getViewport().setOpaque(false);
 			
-			this.add(BorderLayout.NORTH,inputLable);
-			this.add(BorderLayout.SOUTH,scrollPane);
-			
+			this.add(BorderLayout.NORTH,IOLable);
+			this.add(BorderLayout.WEST,scrollPane);
+			//this.add(BorderLayout.EAST,signature);
 		}
 	}
-	
+/*	
 	public class OutputPanel extends JPanel{
 		JLabel outputLable=new JLabel("Output");
 		JTextArea outputArea;
@@ -473,7 +467,7 @@ public class MainFrame extends JFrame {
 			this.add(BorderLayout.SOUTH,scrollPane);
 		}
 	}
-
+*/
 	class MenuItemActionListener implements ActionListener {
 		/**
 		 * 子菜单响应事件
@@ -539,9 +533,6 @@ public class MainFrame extends JFrame {
 				System.out.println("Client: login success ");
 				frame.userPanel.toUserPanel(username);
 			}
-			else {
-				JOptionPane.showMessageDialog(null, "The password is wrong or user:"+username+" doesn't exist.");
-			}
 		}
 	}
 	
@@ -558,9 +549,6 @@ public class MainFrame extends JFrame {
 				System.out.println("Client: signup success ");
 				frame.userPanel.toUserPanel(username);
 			}
-			else {
-				JOptionPane.showMessageDialog(null, username+" already exists.");
-			}
 		}
 	}
 	
@@ -572,9 +560,6 @@ public class MainFrame extends JFrame {
 				System.out.println("Client: logout success ");
 				frame.userPanel.toLogInPanel();
 			}
-			else {
-				JOptionPane.showMessageDialog(null, "logout fail");
-			}
 		}
 	}
 	
@@ -583,7 +568,7 @@ public class MainFrame extends JFrame {
 		@Override
 		public void keyPressed(KeyEvent e) {
 			if(e.getKeyChar()=='\n'){
-				String[] inputs=frame.inputAndOutputPanel.inputPanel.inputArea.getText().split("\n");
+				String[] inputs=frame.inputAndOutputPanel.IOArea.getText().split("\n");
 				String newInput=inputs[inputs.length-1];
 				client.sendInput(newInput);
 			}

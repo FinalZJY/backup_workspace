@@ -26,18 +26,21 @@ public class FileServiceImpl {
         	while((message = fileReader.readLine()) != null) {
         		
         		System.out.println("Server: file:"+message);
-        		if(message.substring(0, 2).equals("00")){//“00”：写文件，“01”：读文件，“*”：分隔符
+        		if(message.substring(0, 2).equals("00")){//“00”：写文件，，“*”：分隔符
         			String[] s=message.split("\\*");
         			writeFile(s[3], s[1], s[2]);
         		}
-        		else if (message.substring(0, 2).equals("01")) {
+        		else if (message.substring(0, 2).equals("01")) {//“01”：读文件，“*”：分隔符
+        			if(message.charAt(message.length()-1)=='*'){//如果文件名不存在，则文件不存在
+        				message=message+"not found";
+        			}
         			String[] s=message.split("\\*");
         			String code=readFile(s[1], s[2]);
         			System.out.println("Server: send code: "+code);
         			fileWriter.println(code);
         			fileWriter.flush();
 				}
-        		else if (message.substring(0, 2).equals("10")) {
+        		else if (message.substring(0, 2).equals("10")) {//"10"：读文件列表，“*”：分隔符
         			String filelist=readFileList(message.substring(3));
         			System.out.println("Server: send filelist: "+filelist);
         			fileWriter.println(filelist);
@@ -126,6 +129,9 @@ public class FileServiceImpl {
 		String list="";
 		File file = new File("code\\"+userId);
 		String[] filelist = file.list();
+		if(filelist==null){
+			return "*the end";
+		}
         for (int i = 0; i < filelist.length; i++) {
         	list=list+filelist[i]+"\n";
         }

@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 
 public class Server {
 	private ServerSocket userServer;
@@ -12,6 +13,7 @@ public class Server {
 	private ServerSocket codeServer;
 	private ServerSocket fileServer;
 	private Socket userSocket;
+	public static ArrayList<String> loginUser=new ArrayList<String>();
 	
 	public Server() {
 		initial();

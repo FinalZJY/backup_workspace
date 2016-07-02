@@ -12,6 +12,7 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 
 import service.UserService;
+import socket.Server;
 
 public class UserServiceImpl implements UserService{
 	private Socket userSocket;
@@ -41,13 +42,26 @@ public class UserServiceImpl implements UserService{
         		if(message.substring(0, 2).equals("00")){//“00”：login，“*”：分隔符，例如：00*admin*password
         			message=message.substring(3);
         			String[] s=message.split("_");
-        			login(s[0], s[1]);
-        			System.out.println("Server: login: "+message);
-        			if(logIn){
-        				writer.println("login success");
+        			
+        			boolean alreadyLogin=false;
+        			for(String user:Server.loginUser){
+        				if(user.equals(s[0])){
+        					System.out.println(user);
+        					alreadyLogin=true;
+        				}
+        			}
+        			if(alreadyLogin){
+        				writer.println(s[0]+" has already login");
         			}
         			else {
-        				writer.println("login fail");
+        				login(s[0], s[1]);
+            			System.out.println("Server: login: "+message);
+            			if(logIn){
+            				writer.println("login success");
+            			}
+            			else {
+            				writer.println("login fail");
+    					}
 					}
         			writer.flush();
         		}
@@ -89,7 +103,8 @@ public class UserServiceImpl implements UserService{
 	public boolean login(String username, String password) throws RemoteException {
 		if(logIn){
 			return false;
-		}
+		}	
+		
 		File adminFloder = new File("admin");
 		if  (!adminFloder .exists()  && !adminFloder .isDirectory()){        
 			adminFloder .mkdir();    
@@ -111,6 +126,7 @@ public class UserServiceImpl implements UserService{
 					if(s[1].equals(password)){
 						this.username=username;
 						logIn=true;
+						Server.loginUser.add(username);
 						return true;
 					}
 					else {
@@ -131,6 +147,7 @@ public class UserServiceImpl implements UserService{
 		}
 		logIn=false;
 		this.username="";
+		Server.loginUser.remove(username);
 		return true;
 	}
 	
